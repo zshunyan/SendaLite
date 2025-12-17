@@ -10,10 +10,10 @@ El logo representa una **chincheta de ubicación** sobre una **montaña**, simbo
 
 ## Integrantes
 
-- **David Gragera Fernández** — DNI: 80085386F  
+- **David Gragera Fernández** — 
   ![Foto carnet David](img/carne/david.png)
 
-- **Shunya Zhan** — DNI: Y1346365M  
+- **Shunya Zhan** — 
   ![Foto carnet Shunya](img/carne/shunya.png)
 
 ## Eslogan
@@ -322,6 +322,7 @@ curl.exe -X POST -H "Content-Type: application/json" -d '{"puntuacion":8}' http:
 Nota: La autenticación para los endpoints que lo requieren se maneja con el sistema de sesiones de Spring Security; desde curl es más fácil probar con herramientas como Postman o simulando el login y enviando la cookie de sesión.
 
 ---
+
 
 
 
