@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>SendaLite - Rutas</title>
+    <th:block th:replace="fragments/common :: headExtras" />
+</head>
+<body>
+<th:block th:replace="fragments/common :: navbar" />
+<h1>Rutas disponibles</h1>
+
+<!-- FILTROS: búsqueda y selectores para filtrar en cliente -->
+<div style="margin-bottom:12px;">
+    <label>Nombre: <input id="filterNombre" type="text" placeholder="Buscar por título..." /></label>
+    <label>Dificultad:
+        <select id="filterDificultad">
+            <option value="">(todas)</option>
+            <option value="FACIL">Fácil</option>
+            <option value="MEDIA">Media</option>
+            <option value="DIFICIL">Difícil</option>
+        </select>
+    </label>
+    <label>Actividad:
+        <select id="filterActividad">
+            <option value="">(todas)</option>
+            <option value="SENDERISMO">Senderismo</option>
+            <option value="CICLISMO">Ciclismo</option>
+            <option value="CORRER">Correr</option>
+            <option value="ESCALADA">Escalada</option>
+            <option value="OTRO">Otro</option>
+        </select>
+    </label>
+    <label>Km min: <input id="filterMinKm" type="number" step="0.1" min="0" style="width:80px;" /></label>
+    <label>Km max: <input id="filterMaxKm" type="number" step="0.1" min="0" style="width:80px;" /></label>
+    <button id="btnAplicarFiltro">Aplicar</button>
+    <button id="btnLimpiarFiltro">Limpiar</button>
+</div>
+
+<div>
+    <table class="routes-table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Actividad</th>
+                <th>Dificultad</th>
+                <th>Km</th>
+                <th>Desnivel (m)</th>
+                <th>Valoración media</th>
+                <th>Ubicación</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="ruta : ${rutas}"
+                th:attr="data-id=${ruta.idRuta}, data-titulo=${ruta.titulo}, data-dificultad=${ruta.dificultad != null ? ruta.dificultad.name() : ''}, data-actividad=${ruta.tipoActividad != null ? ruta.tipoActividad.name() : ''}, data-distancia=${ruta.distanciaKm}"
+                tabindex="0">
+                <td><a th:href="@{'/rutas/' + ${ruta.idRuta}}" th:text="${ruta.titulo}">Ruta</a></td>
+                <td th:text="${ruta.descripcion}">Descripción</td>
+                <td th:text="${ruta.tipoActividad != null ? ruta.tipoActividad.name() : ''}">Actividad</td>
+                <td>
+                    <span class="difficulty-badge" th:text="${ruta.dificultad != null ? ruta.dificultad.name() : ''}">Dificultad</span>
+                    <span class="difficulty-bars" aria-hidden="true">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </span>
+                </td>
+                <td th:text="${ruta.distanciaKm != null ? #numbers.formatDecimal(ruta.distanciaKm,1,2) : ''}">0.0</td>
+                <td th:text="${ruta.desnivelM != null ? ruta.desnivelM : ''}">0</td>
+                <td th:attr="data-media=${medias != null and medias.containsKey(ruta.idRuta) ? medias[ruta.idRuta] : 0}" aria-label="Valoración media de la ruta">
+                    <span class="stars-inline" aria-hidden="true"></span> &nbsp;<span th:text="${medias != null and medias.containsKey(ruta.idRuta) ? #numbers.formatDecimal(medias[ruta.idRuta],1,1) : '0.0'}">0.0</span>
+                </td>
+                <td th:text="${ruta.ubicacion}">Ubicación</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    function logout() {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
+        var token = meta ? meta.getAttribute('content') : null;
+        var headerName = headerMeta ? headerMeta.getAttribute('content') : 'X-XSRF-TOKEN';
+        var headers = {};
+        if (token) headers[headerName] = token;
+        fetch('/logout', { method: 'POST', credentials: 'include', headers: headers })
+            .then(() => { window.location = '/'; })
+            .catch(e => { alert('Error al hacer logout: ' + e); });
+    }
+
+    // Funciones de filtrado en cliente
+    function aplicarFiltro() {
+        var nombre = (document.getElementById('filterNombre').value || '').toLowerCase();
+        var dificultad = document.getElementById('filterDificultad').value || '';
+        var actividad = document.getElementById('filterActividad').value || '';
+        var minKm = parseFloat(document.getElementById('filterMinKm').value);
+        var maxKm = parseFloat(document.getElementById('filterMaxKm').value);
+        if (isNaN(minKm)) minKm = null;
+        if (isNaN(maxKm)) maxKm = null;
+
+        var rows = document.querySelectorAll('table tbody tr');
+        rows.forEach(function(row) {
+            var titulo = (row.getAttribute('data-titulo') || '').toLowerCase();
+            var rowDificultad = row.getAttribute('data-dificultad') || '';
+            var rowActividad = row.getAttribute('data-actividad') || '';
+            var distanciaRaw = row.getAttribute('data-distancia');
+            var rowKm = distanciaRaw ? parseFloat(distanciaRaw) : null;
+
+            var ok = true;
+            if (nombre && !titulo.includes(nombre)) ok = false;
+            if (dificultad && rowDificultad !== dificultad) ok = false;
+            if (actividad && rowActividad !== actividad) ok = false;
+            if (minKm !== null && (rowKm === null || rowKm < minKm)) ok = false;
+            if (maxKm !== null && (rowKm === null || rowKm > maxKm)) ok = false;
+
+            row.style.display = ok ? '' : 'none';
+        });
+    }
+
+    function limpiarFiltro() {
+        document.getElementById('filterNombre').value = '';
+        document.getElementById('filterDificultad').value = '';
+        document.getElementById('filterActividad').value = '';
+        document.getElementById('filterMinKm').value = '';
+        document.getElementById('filterMaxKm').value = '';
+        aplicarFiltro();
+    }
+
+    document.getElementById('btnAplicarFiltro').addEventListener('click', function(e) { e.preventDefault(); aplicarFiltro(); });
+    document.getElementById('btnLimpiarFiltro').addEventListener('click', function(e) { e.preventDefault(); limpiarFiltro(); });
+
+    // Llamada para renderizar estrellas en el índice (si existe la función global renderAllStars)
+    if (typeof renderAllStars === 'function') { document.addEventListener('DOMContentLoaded', renderAllStars); }
+
+    // Hacer las filas clicables: navegar a /rutas/{id} cuando se clickea la fila (excepto sobre enlaces, botones o inputs)
+    function setupClickableRows() {
+        document.querySelectorAll('table.routes-table tbody tr[data-id]').forEach(function(row){
+            row.addEventListener('click', function(e){
+                var target = e.target;
+                if (target.closest('a, button, input, select, textarea')) return; // no interferir
+                var id = this.getAttribute('data-id');
+                if (id) window.location = '/rutas/' + id;
+            });
+            // permitir Enter/Space para activar la fila cuando tiene foco
+            row.addEventListener('keydown', function(e){
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+            });
+        });
+    }
+    document.addEventListener('DOMContentLoaded', setupClickableRows);
+     /*]]>*/
+</script>
+</body>
+</html>

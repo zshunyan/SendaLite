@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin - Panel</title>
+    <th:block th:replace="~{fragments/common :: headExtras}" />
+</head>
+<body>
+<th:block th:replace="~{fragments/common :: navbar}" />
+<h1>Panel de administración</h1>
+<p>Usuarios registrados: <strong th:text="${usuariosCount}">0</strong></p>
+<p>Rutas creadas: <strong th:text="${rutasCount}">0</strong></p>
+<p>
+    <a th:href="@{/admin/usuarios}">Gestionar usuarios</a>
+    &nbsp;|&nbsp;
+    <a th:href="@{/admin/rutas}">Gestionar rutas</a>
+</p>
+<p><a href="/">Volver al inicio</a></p>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!-- Fragments comunes para incluir en las plantillas -->
+<!DOCTYPE none>
+<!-- Fragment con metas comunes y CSS (para insertar en <head>) -->
+<div th:fragment="headExtras">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <meta name="description" th:content="${pageDescription != null ? pageDescription : 'SendaLite - descubre y comparte rutas al aire libre'}" />
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/logo/favicon.svg}" />
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</div>
+
+<!-- Fragment con navbar + logo (para insertar en <body>) -->
+<nav th:fragment="navbar" aria-label="Barra de navegación principal">
+    <div class="nav-inner" style="display:flex;align-items:center;gap:12px;width:100%">
+        <div class="nav-left" style="display:flex;align-items:center;gap:8px;">
+            <a th:href="@{/}" class="brand" style="display:inline-flex;align-items:center;gap:8px;" aria-label="Ir al inicio de SendaLite">
+                <img loading="lazy" th:src="@{/img/logo/logo.png}" alt="Logo SendaLite" class="brand-logo" />
+                <span class="brand-text">SendaLite</span>
+            </a>
+            <a th:href="@{/}">Rutas</a>
+            <a th:href="@{/rutas/nueva}">Crear Ruta</a>
+            <!-- Enlace al panel de administración sólo visible para usuarios admin -->
+            <a th:if="${currentUser != null and currentUser.admin}" th:href="@{/admin}">Admin</a>
+        </div>
+        <div class="nav-actions" style="margin-left:auto;display:flex;align-items:center;gap:12px;">
+            <span th:if="${currentUser == null}">No estás logueado - <a th:href="@{/login}">Login</a> | <a th:href="@{/register}">Registro</a></span>
+            <div th:if="${currentUser != null}" style="display:flex;align-items:center;gap:8px;">
+                <span th:text="${currentUser.nombre}" aria-hidden="false">Usuario</span>
+                <a href="#" id="logoutLink" onclick="if(window.logout){logout();}else document.getElementById('logoutForm')?.submit(); return false;">Logout</a>
+            </div>
+        </div>
+    </div>
+    <form id="logoutForm" th:action="@{/logout}" method="post" style="display:none">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    </form>
+</nav>
+
+<!-- Barra fija inferior (estética) -->
+<div class="app-footer" role="contentinfo">
+    <div class="container">
+        <small>© 2025 SendaLite — Explora. Comparte. Vive la naturaleza.</small>
+    </div>
+</div>
+<div class="app-footer-bar" aria-hidden="true"></div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    (function(){
+        var footer = document.querySelector('.app-footer');
+        if (!footer) return;
+        var ticking = false;
+        function onScroll() {
+            if (ticking) return;
+            ticking = true;
+            window.requestAnimationFrame(function(){
+                var scrollY = window.scrollY || window.pageYOffset;
+                var viewportH = window.innerHeight || document.documentElement.clientHeight;
+                var fullH = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+                var distanceToBottom = fullH - (scrollY + viewportH);
+                // si estamos a menos de 120px del final mostramos el footer
+                if (distanceToBottom <= 120) footer.classList.add('visible'); else footer.classList.remove('visible');
+                ticking = false;
+            });
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        // ejecutamos una vez al cargar
+        document.addEventListener('DOMContentLoaded', onScroll);
+    })();
+    /*]]>*/
+</script>

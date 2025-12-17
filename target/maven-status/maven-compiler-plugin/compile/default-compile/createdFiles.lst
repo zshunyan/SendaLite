@@ -1,0 +1,10 @@
+unex\cume\mdai\SendaLite\model\Usuario.class
+unex\cume\mdai\SendaLite\controller\RestExceptionHandler.class
+unex\cume\mdai\SendaLite\controller\GlobalControllerAdvice.class
+unex\cume\mdai\SendaLite\security\CustomUserDetailsService.class
+unex\cume\mdai\SendaLite\config\AdminInitializer.class
+unex\cume\mdai\SendaLite\tools\PasswordHashGenerator.class
+unex\cume\mdai\SendaLite\security\SecurityConfig.class
+unex\cume\mdai\SendaLite\model\Ruta.class
+unex\cume\mdai\SendaLite\service\UsuarioService.class
+unex\cume\mdai\SendaLite\controller\AuthController.class

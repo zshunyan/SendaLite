@@ -1,0 +1,392 @@
+/* Skin rápida - Opción A: tarjetas, sombras, mejoras en botones y responsive */
+:root{
+    --bg:#f3f6fb;
+    --card:#ffffff;
+    --accent:#1f7a74;
+    --accent-2:#2b7a78;
+    --muted:#6b7280;
+    --border:#e6e9ee;
+    --radius:10px;
+    --shadow: 0 6px 18px rgba(17,24,39,0.06);
+    --glass: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(250,251,253,0.85));
+    --text: #0f1724;
+    --muted-2: #9aa3ad;
+    --success: #16a34a;
+    --danger: #dc2626;
+}
+
+html,body{
+    height:100%;
+    margin:0;
+    padding-left:16px;
+    padding-right:16px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    font-size:16px; /* base size */
+    line-height:1.45;
+}
+
+/* Top navbar */
+nav{
+    background:var(--glass);
+    backdrop-filter: blur(6px);
+    border-bottom:1px solid rgba(15,23,36,0.04);
+    padding:12px 20px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    box-shadow: var(--shadow);
+    border-radius:0 0 var(--radius) var(--radius);
+}
+nav a{ color:var(--accent); text-decoration:none; font-weight:600; padding:6px 8px }
+nav .brand{ font-weight:700; color:#0b4b48; font-size:1.05rem; margin-right:8px }
+
+/* Top navbar tweaks: logo only once, actions to the right */
+nav .nav-inner{ width:100%; display:flex; align-items:center }
+nav .brand-logo{ height:40px; width:auto; border-radius:6px }
+nav .brand-text{ font-weight:800; color:#043534; margin-left:6px }
+nav .nav-actions{ margin-left:auto }
+
+/* Small user actions */
+.nav-actions a{ color:var(--accent); font-weight:700 }
+
+/* Page layout */
+h1{ margin:18px 0; font-size:1.6rem; color:#072e2d }
+.container{ max-width:1100px; margin:18px auto; padding:0 16px }
+
+/* Table and list transform to cards */
+.table-wrap{ display:block; }
+table{ width:100%; border-collapse:collapse; background:transparent; display:table }
+/* Alineación vertical por defecto para celdas */
+table td, table th { vertical-align: middle; }
+table thead tr{ background:transparent }
+table th, table td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--border) }
+tr:nth-child(even) td{ background:transparent; }
+tr td a { color:var(--accent-2); text-decoration:none; font-weight:600 }
+
+/* Estilo para la tabla de rutas (reemplaza atributos HTML obsoletos) */
+.routes-table{ width:100%; border-collapse:collapse; }
+.routes-table th, .routes-table td{ padding:12px 14px; border-bottom:1px solid var(--border); text-align:left }
+
+/* Card style for individual route detail or list items */
+.card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:14px;
+    box-shadow: var(--shadow);
+}
+.card-header{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px }
+.card-title{ font-weight:800; color:#063b39 }
+.card-footer{ margin-top:12px; display:flex; gap:8px; justify-content:flex-end }
+
+/* Grid for route index: responsive cards */
+.route-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:14px;
+    margin:12px 0;
+}
+.route-item{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+    transition:transform .14s ease, box-shadow .14s ease;
+    cursor:pointer;
+}
+.route-item:hover{ transform:translateY(-4px); box-shadow:0 10px 26px rgba(15,23,36,0.08) }
+.route-item img{ width:110px; height:80px; object-fit:cover; border-radius:8px; flex-shrink:0 }
+.route-item .meta{ display:flex; flex-direction:column; gap:6px }
+.route-item .title{ font-weight:700; color:#073433 }
+.route-item .sub{ color:var(--muted); font-size:0.92rem }
+
+/* Filters */
+div[style*="margin-bottom"]{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:10px;
+    border-radius:var(--radius);
+    margin:12px;
+    display:flex;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+    box-shadow: var(--shadow);
+}
+input[type=text], input[type=number], select, textarea{
+    padding:10px 12px;
+    border:1px solid #e9edf2;
+    border-radius:8px;
+    background:#fff;
+    min-width:140px;
+    outline:none;
+    transition:box-shadow .12s ease, border-color .12s ease, transform .06s ease;
+}
+input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus{
+    box-shadow:0 8px 26px rgba(17,24,39,0.06);
+    border-color:var(--accent-2);
+    transform:translateY(-1px);
+}
+input[disabled], textarea[disabled]{ opacity:0.7 }
+
+/* Form small help text */
+.form-help{ color:var(--muted-2); font-size:.9rem; margin-top:6px }
+
+/* Buttons: more variants and subtle hover */
+button{
+    background:var(--accent);
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+button:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(15,23,36,0.08) }
+button.secondary{
+    background:transparent;
+    color:var(--accent-2);
+    border:1px solid var(--border);
+}
+button.ghost{
+    background:transparent; color:var(--accent-2); border:1px dashed var(--border);
+}
+button.danger{ background:var(--danger); }
+
+/* Make links more consistent */
+a{ color:var(--accent-2); text-decoration:none; transition:color .12s ease }
+a:hover{ color: #164b49; text-decoration:underline }
+
+/* Table improvements: hover and compact mode */
+table th, table td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--border) }
+tr:nth-child(even) td{ background:transparent; }
+tr:hover td{ background:linear-gradient(90deg, rgba(243,246,251,0.6), rgba(255,255,255,0.6)) }
+.table-compact th, .table-compact td{ padding:8px 10px }
+
+/* Center difficulty column in index */
+.routes-table td:nth-child(4) { text-align:left; padding:10px 8px; }
+
+/* Make table rows clickable (pointer + focus) */
+.routes-table tbody tr{ cursor:pointer }
+.routes-table tbody tr:focus{ outline: 3px solid rgba(43,122,120,0.12); outline-offset:2px }
+
+/* Ruta detail */
+#rutaContainer{
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:18px;
+    margin:12px 0;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    box-shadow: var(--shadow);
+    flex-direction:row; /* por defecto fila en desktop */
+}
+#rutaContainer img{
+    max-width:260px;
+    width:100%;
+    border-radius:8px;
+    object-fit:cover;
+}
+#rutaContainer{ display:flex; gap:18px; align-items:flex-start }
+#rutaContainer .ruta-media{ flex:0 0 320px }
+#rutaContainer .ruta-media img{ width:100%; height:auto; border-radius:8px }
+#rutaContainer .ruta-media-placeholder{ flex:0 0 160px }
+#rutaContainer .ruta-media-placeholder .card{ height:120px; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, #f7fafc, #ffffff); color:var(--muted); font-weight:700 }
+#rutaDetails{ flex:1; display:flex; flex-direction:column; gap:8px }
+#rutaDetails .row{ display:flex; gap:12px; flex-wrap:wrap }
+#rutaDetails .field{ min-width:140px }
+
+/* Make comments and valorations visually separated */
+#rutaContainer .comentarios, #rutaContainer .valoraciones{ margin-top:12px; padding-top:12px; border-top:1px dashed var(--border) }
+
+/* Comentarios y valoraciones (cuando están fuera de #rutaContainer) */
+.comentarios, .valoraciones {
+    margin-top:16px;
+    padding-top:12px;
+    border-top:1px dashed var(--border);
+    list-style:none;
+    padding-left:0;
+}
+.comentarios li, .valoraciones li {
+    padding:10px 12px;
+    border-bottom:1px solid rgba(0,0,0,0.03);
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:center;
+}
+.comentarios li strong, .valoraciones li strong { color:#073433; font-weight:700; margin-right:8px }
+.comentarios li em { margin-left:8px; color:var(--muted); font-size:0.92rem }
+
+/* Separación para formularios de comentarios/valoraciones */
+.comentarios + div, .valoraciones + div, .comentarios + h3, .valoraciones + h3 { margin-top:12px }
+
+/* Forms */
+form label{ display:block; margin:8px 0; font-weight:600; color:#073433 }
+textarea{ min-height:120px; padding:10px; border-radius:8px }
+
+/* Small helpers */
+.badge{
+    background:linear-gradient(90deg, rgba(43,122,120,0.12), rgba(31,122,116,0.08));
+    color:var(--accent-2);
+    border-radius:999px;
+    padding:6px 10px;
+    font-weight:700;
+    font-size:.85rem;
+}
+
+/* Avatar small */
+.avatar{ width:44px; height:44px; border-radius:50%; object-fit:cover; margin-right:10px; flex-shrink:0; box-shadow:0 2px 6px rgba(15,23,36,0.06) }
+.item-left{ display:flex; align-items:flex-start; gap:10px }
+.item-content{ display:flex; flex-direction:column }
+.item-actions{ display:flex; align-items:center; gap:8px }
+
+/* Stars */
+.stars, .stars-inline { display:inline-flex; gap:4px; color:#f59e0b; font-size:1rem }
+.star { color: #d1d5db; font-size:1rem }
+.star.filled { color:#f59e0b }
+
+/* Read more */
+.read-more-toggle { color:var(--accent); cursor:pointer; margin-left:8px; font-weight:700 }
+
+/* Upload placeholder button */
+#uploadPhotoBtn{ background:transparent; color:var(--accent-2); border:1px solid var(--border); padding:6px 8px; border-radius:8px; cursor:pointer }
+
+/* Focus visible para accesibilidad */
+:focus {
+    outline: 3px solid rgba(31,122,116,0.22);
+    outline-offset: 2px;
+}
+
+a:focus, button:focus, input:focus, select:focus {
+    box-shadow: 0 0 0 3px rgba(31,122,116,0.06);
+}
+
+/* Alinear brand logo y texto correctamente */
+.brand-logo{ height:36px; width:auto; display:inline-block }
+.brand-text{ font-weight:800; color:#043534; margin-left:6px; display:inline-block }
+
+/* Mejora contraste en navbar links */
+nav a{ color:var(--accent); }
+
+/* Estilos para el selector interactivo de estrellas */
+.star-input { display:inline-flex; gap:6px; align-items:center }
+.star-input .star { font-size:1.6rem; background:transparent; border:none; cursor:pointer; color:#d1d5db }
+.star-input .star.filled { color:#f59e0b; }
+.star-input .star:focus { outline: 2px solid rgba(31,122,116,0.22); }
+
+/* Screen-reader only helper */
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0 }
+
+/* Difficulty color variants for index rows and route detail (solo color de texto, sin recuadro) */
+tr[data-dificultad="FACIL"] .difficulty-badge,
+.routes-table tr[data-dificultad="FACIL"] td:nth-child(4) {
+    color: var(--success);
+    background: none;
+    padding:0;
+}
+tr[data-dificultad="MEDIA"] .difficulty-badge,
+.routes-table tr[data-dificultad="MEDIA"] td:nth-child(4) {
+    color: #f59e0b; /* naranja */
+    background: none;
+    padding:0;
+}
+tr[data-dificultad="DIFICIL"] .difficulty-badge,
+.routes-table tr[data-dificultad="DIFICIL"] td:nth-child(4) {
+    color: #ef4444; /* rojo */
+    background: none;
+    padding:0;
+}
+
+/* Ensure difficulty-badge doesn't have box/width */
+.difficulty-badge{
+    display:inline; /* solo texto coloreado */
+    padding:0;
+    min-width:auto;
+    height:auto;
+    background:none;
+    border-radius:0;
+}
+
+/* Difficulty right-side bars: 3 small vertical bars showing level */
+.difficulty-bars{ display:inline-flex; gap:4px; align-items:center; margin-left:8px }
+.difficulty-bars .bar{ width:6px; height:14px; background: rgba(15,23,36,0.08); border-radius:2px; transition:background .18s ease, transform .12s ease }
+/* FACIL: only 1 colored (left) */
+tr[data-dificultad="FACIL"] .difficulty-bars .bar:nth-child(1){ background: var(--success); transform: scaleY(1.05) }
+tr[data-dificultad="FACIL"] .difficulty-bars .bar:nth-child(2),
+tr[data-dificultad="FACIL"] .difficulty-bars .bar:nth-child(3){ background: rgba(15,23,36,0.08) }
+/* MEDIA: first 2 colored (orange) */
+tr[data-dificultad="MEDIA"] .difficulty-bars .bar:nth-child(1),
+tr[data-dificultad="MEDIA"] .difficulty-bars .bar:nth-child(2){ background: #f59e0b; transform: scaleY(1.05) }
+tr[data-dificultad="MEDIA"] .difficulty-bars .bar:nth-child(3){ background: rgba(15,23,36,0.08) }
+/* DIFICIL: all 3 colored (red) */
+tr[data-dificultad="DIFICIL"] .difficulty-bars .bar{ background: #ef4444; transform: scaleY(1.05) }
+
+/* Hover de fila más pronunciado */
+.routes-table tbody tr{ transition: background .12s ease, transform .12s ease }
+.routes-table tbody tr:hover td{ background: linear-gradient(90deg, rgba(43,122,120,0.08), rgba(255,255,255,0.02)); }
+.routes-table tbody tr:hover td a{ color: #0b5250; }
+
+/* Small adjustments: make the table row appear slightly elevated on hover for emphasis */
+.routes-table tbody tr:hover{ transform: translateY(-2px); box-shadow: 0 6px 18px rgba(17,24,39,0.03); }
+
+/* Ruta detail: only color for difficulty text (no badge recuadro) */
+#rutaDetails .field[data-dificultad="FACIL"] span,
+#rutaDetails .field[data-dificultad="FACIL"] strong + span { color: var(--success); background:none; padding:0 }
+#rutaDetails .field[data-dificultad="MEDIA"] span,
+#rutaDetails .field[data-dificultad="MEDIA"] strong + span { color: #f59e0b; background:none; padding:0 }
+#rutaDetails .field[data-dificultad="DIFICIL"] span,
+#rutaDetails .field[data-dificultad="DIFICIL"] strong + span { color: #ef4444; background:none; padding:0 }
+
+/* Keep footer bar and footer styles (if footer exists) */
+.app-footer{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    transform: translateY(110%);
+    transition: transform .28s cubic-bezier(.2,.8,.2,1), box-shadow .28s ease;
+    background: #2B7A78FF; /* color solicitado */
+    color: #ffffff;
+    padding:10px 16px;
+    font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 -6px 24px rgba(11,77,75,0.12);
+    z-index:70;
+}
+.app-footer.visible{ transform: translateY(0); }
+
+/* Hide thin bar (we show full footer when scrolled) */
+.app-footer-bar{ display:none; }
+
+/* Ensure body has a tiny bottom padding so content isn't hidden behind the bar */
+body{ padding-bottom:12px }
+
+/* Make km filter inputs smaller (más compacto) */
+#filterMinKm, #filterMaxKm {
+    width:56px !important;
+    padding:6px 8px !important;
+    font-size:0.95rem;
+}
+
+/* Responsive */
+@media (max-width:1000px){
+    .route-grid{ grid-template-columns: repeat(2, 1fr) }
+    #rutaContainer{ flex-direction:column; align-items:stretch }
+    #rutaContainer img{ max-width:100%; width:100% }
+}
+@media (max-width:700px){
+    nav{ flex-wrap:wrap; gap:8px }
+    .route-grid{ grid-template-columns: 1fr }
+    div[style*="margin-bottom"]{ flex-direction:column; align-items:stretch }
+    table th, table td{ padding:10px 8px }
+    .route-item{ padding:10px; gap:10px }
+    .container{ padding:0 10px }
+}

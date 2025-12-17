@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Editar Usuario</title>
+    <th:block th:replace="~{fragments/common :: headExtras}" />
+</head>
+<body>
+<th:block th:replace="~{fragments/common :: navbar}" />
+<h1>Editar usuario</h1>
+<div th:if="${usuario == null}">
+    <p>Usuario no encontrado.</p>
+</div>
+<div th:if="${usuario != null}">
+    <form id="userForm" onsubmit="return enviar()">
+        <input type="hidden" id="id" th:value="${usuario.idUsuario}" />
+        <label>Nombre: <input id="nombre" type="text" th:value="${usuario.nombre}" /></label><br/>
+        <label>Email: <input id="email" type="email" th:value="${usuario.email}" /></label><br/>
+        <label>Admin: <input id="admin" type="checkbox" th:checked="${usuario.admin}" /></label><br/>
+        <button type="submit">Guardar</button>
+        <a th:href="@{/admin/usuarios}">Cancelar</a>
+    </form>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var csrfMeta = document.querySelector('meta[name="_csrf"]');
+    var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+    var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
+
+    function enviar() {
+        var id = document.getElementById('id').value;
+        var nombre = document.getElementById('nombre').value;
+        var email = document.getElementById('email').value;
+        var admin = document.getElementById('admin').checked;
+        var payload = { nombre: nombre, email: email, admin: admin };
+        var headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) headers[csrfHeaderName] = csrfToken;
+        fetch('/api/usuarios/' + id, { method: 'PUT', credentials: 'include', headers: headers, body: JSON.stringify(payload) })
+            .then(r => { if (r.ok) window.location = '/admin/usuarios'; else r.text().then(t => alert('Error: ' + t)); })
+            .catch(e => alert('Error de red: ' + e));
+        return false;
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

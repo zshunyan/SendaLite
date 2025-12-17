@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Nueva Ruta'">Ruta</title>
+    <th:block th:replace="fragments/common :: headExtras" />
+</head>
+<body>
+<th:block th:replace="fragments/common :: navbar" />
+<h1 th:text="${ruta != null && ruta.titulo != null} ? ${ruta.titulo} : 'Crear / Editar Ruta'">Crear / Editar Ruta</h1>
+<!-- Usar JS para enviar JSON al endpoint REST -->
+<div th:with="rutaId=${ruta != null} ? ${ruta.idRuta} : 0">
+    <label>Título: <input id="titulo" type="text" th:value="${ruta != null} ? ${ruta.titulo} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <label>Descripción: <textarea id="descripcion" th:text="${ruta != null} ? ${ruta.descripcion} : ''" th:disabled="${currentUser == null}"></textarea></label><br/>
+    <label>Dificultad:
+        <select id="dificultad" th:disabled="${currentUser == null}">
+            <option value="FACIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'FACIL'}">Fácil</option>
+            <option value="MEDIA" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'MEDIA'}">Media</option>
+            <option value="DIFICIL" th:selected="${ruta != null and ruta.dificultad != null and ruta.dificultad.name() == 'DIFICIL'}">Difícil</option>
+        </select>
+    </label><br/>
+
+    <label>Tipo actividad:
+        <select id="tipoActividad" th:disabled="${currentUser == null}">
+            <option value="SENDERISMO" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'SENDERISMO'}">Senderismo</option>
+            <option value="CICLISMO" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'CICLISMO'}">Ciclismo</option>
+            <option value="CORRER" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'CORRER'}">Correr</option>
+            <option value="ESCALADA" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'ESCALADA'}">Escalada</option>
+            <option value="OTRO" th:selected="${ruta != null and ruta.tipoActividad != null and ruta.tipoActividad.name() == 'OTRO'}">Otro</option>
+        </select>
+    </label><br/>
+
+    <label>Distancia (km): <input id="distancia" type="text" th:value="${ruta != null} ? ${ruta.distanciaKm} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <label>Desnivel (m): <input id="desnivel" type="number" min="0" th:value="${ruta != null} ? ${ruta.desnivelM} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <label>Tiempo estimado (min): <input id="tiempo" type="number" min="0" th:value="${ruta != null} ? ${ruta.tiempoEstimadoMin} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <label>Ubicación: <input id="ubicacion" type="text" th:value="${ruta != null} ? ${ruta.ubicacion} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <label>Etiquetas (separadas por coma): <input id="etiquetas" type="text" th:value="${ruta != null} ? ${ruta.etiquetas} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <label>Fotos (URLs separadas por coma): <input id="fotos" type="text" th:value="${ruta != null} ? ${ruta.fotos} : ''" th:disabled="${currentUser == null}"/></label><br/>
+    <!-- Campo 'activa' oculto en formulario: dejamos que el backend gestione este valor por defecto -->
+    <input id="activa" type="hidden" th:value="${ruta != null} ? ${ruta.activa} : true" />
+
+    <!-- Mostrar autor actual si existe -->
+    <label>Autor: <span th:text="${currentUser != null} ? ${currentUser.nombre} : 'Anónimo'">Autor</span></label>
+    <br/>
+
+    <!-- Mostrar botón Guardar solo si el usuario está autenticado -->
+    <div>
+        <button th:if="${currentUser != null}" onclick="enviarRuta()">Guardar</button>
+        <p th:if="${currentUser == null}">Para crear una ruta debes <a href="/login">iniciar sesión</a> o <a href="/register">registrarte</a>.</p>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var rutaId = /*[[${ruta != null and ruta.idRuta != null ? ruta.idRuta : 0}]]*/ 0;
+    var isAuthenticated = /*[[${currentUser != null}]]*/ false;
+    /*]]>*/
+
+    function enviarRuta() {
+        if (!isAuthenticated) { alert('Debes iniciar sesión o registrarte para crear una ruta'); return; }
+
+        var titulo = document.getElementById('titulo').value;
+        var descripcion = document.getElementById('descripcion').value;
+        var dificultad = document.getElementById('dificultad').value || null;
+        var tipoActividad = document.getElementById('tipoActividad').value || null;
+        var distanciaStr = document.getElementById('distancia').value;
+        var distancia = null;
+        if (distanciaStr && distanciaStr.trim() !== "") {
+            var n = Number(distanciaStr.replace(',', '.'));
+            if (!isNaN(n)) distancia = n;
+        }
+        var desnivelRaw = document.getElementById('desnivel').value;
+        var desnivel = (desnivelRaw && desnivelRaw.trim() !== "") ? parseInt(desnivelRaw, 10) : null;
+        var tiempoRaw = document.getElementById('tiempo').value;
+        var tiempo = (tiempoRaw && tiempoRaw.trim() !== "") ? parseInt(tiempoRaw, 10) : null;
+        var ubicacion = document.getElementById('ubicacion').value || null;
+        var etiquetas = document.getElementById('etiquetas').value || null;
+        var fotos = document.getElementById('fotos').value || null;
+        // NOTA: el campo 'activa' se oculta en el formulario; leer su valor del input hidden si es necesario
+        var activa = (function(){ var el = document.getElementById('activa'); if (!el) return true; return el.type === 'hidden' ? (el.value === 'true' || el.value === 'TRUE') : el.checked; })();
+
+        var payload = {
+            titulo: titulo,
+            descripcion: descripcion,
+            dificultad: dificultad && dificultad !== '' ? dificultad : null,
+            distanciaKm: distancia,
+            tipoActividad: tipoActividad && tipoActividad !== '' ? tipoActividad : null,
+            desnivelM: desnivel,
+            tiempoEstimadoMin: tiempo,
+            ubicacion: ubicacion,
+            etiquetas: etiquetas,
+            fotos: fotos,
+            activa: activa
+        };
+
+        var method = rutaId && rutaId > 0 ? 'PUT' : 'POST';
+        var url = '/api/rutas' + (method === 'PUT' ? '/' + rutaId : '');
+
+        // Construir headers incluyendo CSRF token
+        var headers = { 'Content-Type': 'application/json' };
+        var metaToken = document.querySelector('meta[name="_csrf"]');
+        var metaHeader = document.querySelector('meta[name="_csrf_header"]');
+        if (metaToken && metaHeader) {
+            var token = metaToken.getAttribute('content');
+            var headerName = metaHeader.getAttribute('content');
+            if (token && headerName) headers[headerName] = token;
+        }
+
+        fetch(url, {
+            method: method,
+            headers: headers,
+            credentials: 'include',
+            body: JSON.stringify(payload)
+        }).then(r => {
+            if (r.ok) {
+                r.json().then(obj => {
+                    var id = obj.idRuta || rutaId;
+                    window.location.href = '/rutas/' + id;
+                });
+            } else {
+                r.text().then(t => alert('Error: ' + t));
+            }
+        }).catch(e => alert('Error de red: ' + e));
+    }
+</script>
+
+<p><a href="/">Volver a Rutas</a></p>
+</body>
+</html>

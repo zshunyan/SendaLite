@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${ruta != null ? ruta.titulo : 'Ruta'}">Ruta</title>
+    <th:block th:replace="fragments/common :: headExtras" />
+</head>
+<body>
+<th:block th:replace="fragments/common :: navbar" />
+<p><a href="/">Volver al inicio</a></p>
+<h1 th:text="${ruta != null ? ruta.titulo : 'Ruta no encontrada'}">Ruta</h1>
+<div th:if="${ruta != null}" id="rutaContainer" th:attr="data-ruta-id=${ruta != null ? ruta.idRuta : -1}">
+    <!-- Imagen deshabilitada por ahora: mostramos un placeholder simple en su lugar -->
+    <div class="ruta-media-placeholder">
+        <div class="card" style="text-align:center;color:var(--muted);padding:12px;">Sin foto por ahora</div>
+        <div style="margin-top:10px; text-align:center;">
+            <input id="uploadPhotoInput" type="file" style="display:none" aria-hidden="true" />
+            <button id="uploadPhotoBtn" type="button" th:if="${currentUser != null}" aria-label="Subir foto (placeholder)">Subir foto (placeholder)</button>
+            <a th:if="${currentUser == null}" th:href="@{/login}" class="button-like">Inicia sesión para subir fotos</a>
+        </div>
+    </div>
+    <div id="rutaDetails">
+        <div class="card">
+            <h2 th:text="${ruta.titulo}">Título</h2>
+            <p class="descripcion" th:text="${ruta.descripcion}">Descripción</p>
+            <button type="button" class="read-more-toggle" style="display:none" aria-expanded="false" aria-controls="descripcion">Leer más</button>
+            <div class="row">
+                <div class="field"><strong>Autor:</strong> <span th:text="${ruta.autor != null ? ruta.autor.nombre : 'Desconocido'}">Autor</span></div>
+                <div class="field" th:attr="data-dificultad=${ruta.dificultad != null ? ruta.dificultad.name() : ''}"><strong>Dificultad:</strong>
+                    <span class="difficulty-badge" th:text="${ruta.dificultad != null ? ruta.dificultad.name() : 'No especificada'}">Dificultad</span>
+                </div>
+                <div class="field"><strong>Actividad:</strong> <span th:text="${ruta.tipoActividad != null ? ruta.tipoActividad.name() : 'No especificado'}">Actividad</span></div>
+            </div>
+            <div class="row">
+                <div class="field"><strong>Distancia (km):</strong> <span th:text="${ruta.distanciaKm != null ? ruta.distanciaKm : 'N/D'}">N/D</span></div>
+                <div class="field"><strong>Desnivel (m):</strong> <span th:text="${ruta.desnivelM != null ? ruta.desnivelM : 'N/D'}">N/D</span></div>
+                <div class="field"><strong>Tiempo (min):</strong> <span th:text="${ruta.tiempoEstimadoMin != null ? ruta.tiempoEstimadoMin : 'N/D'}">N/D</span></div>
+            </div>
+            <div class="row">
+                <div class="field"><strong>Ubicación:</strong> <span th:text="${ruta.ubicacion != null ? ruta.ubicacion : 'N/D'}">N/D</span></div>
+                <div class="field"><strong>Etiquetas:</strong> <span th:text="${ruta.etiquetas != null ? ruta.etiquetas : 'Ninguna'}">Ninguna</span></div>
+            </div>
+            <div class="row">
+                 <div class="field"><strong>Fecha creación:</strong> <span th:text="${ruta.fechaCreacion}">fecha</span></div>
+                 <div class="field"><strong>Valoración media:</strong>
+                     <span class="media-rating" th:attr="data-media=${media}">
+                         <span class="stars" aria-hidden="true"></span>
+                         &nbsp;<span class="media-number" th:text="${#numbers.formatDecimal(media,1,1)}">0.0</span>
+                     </span>
+                 </div>
+             </div>
+        </div>
+    </div>
+</div> <!-- fin de #rutaContainer -->
+
+<h2>Comentarios</h2>
+<ul class="comentarios">
+    <li th:each="c : ${comentarios}" th:attr="data-comentario-id=${c.idComentario}, data-text=${c.texto}">
+        <div class="item-left">
+            <img loading="lazy" class="avatar" th:src="@{/img/avatar-default.svg}" alt="Avatar de usuario" />
+            <div class="item-content">
+                <strong th:text="${c.usuario != null ? c.usuario.nombre : 'Anon'}">Usuario</strong>:
+                <span th:text="${c.texto}">Texto</span>
+                <em th:text="${c.fechaComentario}">fecha</em>
+            </div>
+        </div>
+        <div class="item-actions">
+            <span th:if="${currentUser != null and c.usuario != null and c.usuario.idUsuario == currentUser.idUsuario}">
+                &nbsp;<button type="button" th:attr="data-edit-id=${c.idComentario}" onclick="startEditComentario(this.dataset.editId)">Editar</button>
+                &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar</button>
+            </span>
+            <span th:if="${currentUser != null and currentUser.admin}">
+                &nbsp;<button type="button" th:attr="data-del-id=${c.idComentario}" onclick="deleteComentario(this.dataset.delId)">Eliminar (admin)</button>
+            </span>
+        </div>
+    </li>
+</ul>
+
+<div th:if="${currentUser != null}">
+    <h3>Añadir comentario</h3>
+    <form id="comentarioForm" onsubmit="return enviarComentario()">
+        <label>Usuario:</label>
+        <span th:text="${currentUser.nombre}"></span>
+        <br/>
+        <label for="texto">Texto:</label>
+        <input id="texto" name="texto" />
+        <button id="comentarioSubmit" type="submit">Añadir</button>
+        <button id="comentarioCancel" type="button" style="display:none;margin-left:8px;" onclick="cancelEditComentario()">Cancelar</button>
+    </form>
+</div>
+<div th:if="${currentUser == null}">
+    <p>Para añadir comentarios <a href="/login">inicia sesión</a> o <a href="/register">regístrate</a>.</p>
+</div>
+
+<h2>Valoraciones</h2>
+<ul class="valoraciones">
+    <li th:each="v : ${valoraciones}" th:attr="data-valoracion-id=${v.idValoracion}, data-usuario-id=${v.usuario != null ? v.usuario.idUsuario : -1}">
+        <div class="item-left">
+            <img loading="lazy" class="avatar" th:src="@{/img/avatar-default.svg}" alt="Avatar de usuario" />
+            <div class="item-content">
+                <strong th:text="${v.usuario != null ? v.usuario.nombre : 'Anon'}">Usuario</strong> - <span th:text="${v.puntuacion}">0</span>
+            </div>
+        </div>
+        <div class="item-actions">
+            <span th:if="${currentUser != null and ((v.usuario != null and v.usuario.idUsuario == currentUser.idUsuario) or currentUser.admin)}">
+                &nbsp;<button type="button" th:attr="data-del-id=${v.idValoracion}" onclick="deleteValoracion(this.dataset.delId)">Eliminar</button>
+            </span>
+        </div>
+    </li>
+</ul>
+
+<div th:if="${currentUser != null}">
+    <h3>Añadir/Modificar valoración</h3>
+    <form id="valoracionForm" onsubmit="return enviarValoracion()">
+        <label>Usuario:</label>
+        <span th:text="${currentUser.nombre}"></span>
+        <br/>
+        <label for="puntuacion">Puntuación (1-10):</label>
+        <!-- Selector interactivo: 5 estrellas representando 1-10 en pasos de 2 -->
+        <div class="star-input" role="radiogroup" aria-label="Seleccionar puntuación">
+            <button type="button" class="star selectable" data-value="2" aria-checked="false" role="radio" aria-label="2">☆</button>
+            <button type="button" class="star selectable" data-value="4" aria-checked="false" role="radio" aria-label="4">☆</button>
+            <button type="button" class="star selectable" data-value="6" aria-checked="false" role="radio" aria-label="6">☆</button>
+            <button type="button" class="star selectable" data-value="8" aria-checked="false" role="radio" aria-label="8">☆</button>
+            <button type="button" class="star selectable" data-value="10" aria-checked="false" role="radio" aria-label="10">☆</button>
+        </div>
+        <input id="puntuacion" name="puntuacion" type="number" min="1" max="10" style="width:80px;margin-top:8px;" />
+        <button type="submit">Enviar</button>
+    </form>
+</div>
+<div th:if="${currentUser == null}">
+    <p>Para valorar <a href="/login">inicia sesión</a> o <a href="/register">regístrate</a>.</p>
+</div>
+
+<div th:if="${currentUser != null and ((ruta.autor != null and ruta.autor.idUsuario == currentUser.idUsuario) or currentUser.admin)}">
+    <button type="button" onclick="deleteRuta()">Eliminar ruta</button>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // obtener rutaId desde el atributo data para evitar inline Thymeleaf en JS
+    var _rc = document.getElementById('rutaContainer');
+    var rutaId = _rc ? (parseInt(_rc.dataset.rutaId, 10) || -1) : -1;
+     // Usaremos meta tags CSRF en el DOM para obtener token y headerName
+     var csrfMeta = document.querySelector('meta[name="_csrf"]');
+     var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+     var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+     var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
+     /*]]>*/
+
+    // Funciones nuevas: estrellas, leer más y upload placeholder
+    function renderAllStars() {
+        document.querySelectorAll('.media-rating').forEach(function(el){
+            var mediaRaw = el.dataset.media;
+            var media = parseFloat(mediaRaw) || 0;
+            var starsCount = Math.round(media / 2); // valor 1-10 -> 0-5 estrellas
+            var starsEl = el.querySelector('.stars');
+            if (!starsEl) return;
+            var html = '';
+            for (var i=0;i<5;i++){
+                html += (i < starsCount) ? '<span class="star filled">★</span>' : '<span class="star">☆</span>';
+            }
+            starsEl.innerHTML = html;
+            el.setAttribute('aria-label', 'Valoración media ' + (Math.round(media*10)/10) );
+        });
+        // estrellas en tablas/listados (index) y otras instancias
+        document.querySelectorAll('[data-media]').forEach(function(el){
+            if (!el.classList.contains('media-rating')){
+                var media = parseFloat(el.dataset.media) || 0;
+                var starsCount = Math.round(media / 2);
+                var container = el.querySelector('.stars-inline');
+                if (!container) return;
+                var html = '';
+                for (var i=0;i<5;i++) html += (i<starsCount) ? '<span class=\'star filled\'>★</span>' : '<span class=\'star\'>☆</span>';
+                container.innerHTML = html;
+            }
+        });
+    }
+
+    function setupReadMore() {
+        var desc = document.querySelector('.descripcion');
+        var toggle = document.querySelector('.read-more-toggle');
+        if (!desc || !toggle) return;
+        var full = desc.textContent || '';
+        var limit = 280;
+        if (full.length <= limit) { toggle.style.display = 'none'; return; }
+        var truncated = full.slice(0, limit).trim() + '...';
+        desc.textContent = truncated;
+        toggle.style.display = 'inline-block';
+        var expanded = false;
+        toggle.addEventListener('click', function(e){ e.preventDefault();
+            if (!expanded) { desc.textContent = full; toggle.textContent = 'Leer menos'; expanded = true; }
+            else { desc.textContent = truncated; toggle.textContent = 'Leer más'; expanded = false; }
+        });
+    }
+
+    function setupUploadPlaceholder() {
+        var btn = document.getElementById('uploadPhotoBtn');
+        var input = document.getElementById('uploadPhotoInput');
+        if (!btn || !input) return;
+        btn.addEventListener('click', function(){
+            input.click();
+        });
+        input.addEventListener('change', function(){
+            if (input.files && input.files.length > 0) {
+                alert('Archivo seleccionado: ' + input.files[0].name + '\n\nNota: subida deshabilitada (placeholder).');
+                input.value = null;
+            }
+        });
+    }
+
+    function setupStarInput() {
+        var stars = document.querySelectorAll('.star-input .star.selectable');
+        var input = document.getElementById('puntuacion');
+        if (!stars || !input) return;
+        function setStars(value) {
+            stars.forEach(function(s){
+                var v = parseInt(s.dataset.value,10) || 0;
+                if (v <= value) { s.classList.add('filled'); s.setAttribute('aria-checked','true'); s.textContent='★'; }
+                else { s.classList.remove('filled'); s.setAttribute('aria-checked','false'); s.textContent='☆'; }
+            });
+        }
+        stars.forEach(function(s){
+            s.addEventListener('click', function(){
+                var v = parseInt(this.dataset.value,10) || 0;
+                input.value = v;
+                setStars(v);
+            });
+            s.addEventListener('keydown', function(e){
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.click(); }
+            });
+        });
+        // Si ya hay un valor (usuario modificando), inicializar visualmente
+        var existing = parseInt(input.value,10) || 0;
+        if (existing > 0) setStars(existing);
+    }
+
+    /*<![CDATA[*/
+    // DEBUG: imprimir cookies y token
+    console.debug('csrfToken (Thymeleaf):', csrfToken);
+    console.debug('document.cookie:', document.cookie);
+
+    var editingComentarioId = null;
+
+    function sanitizeToken(t) {
+        if (!t) return t;
+        // quitar comillas alrededor si existen
+        return t.replace(/^[\s\uFEFF\u00A0]*"?(.*?)"?[\s\uFEFF\u00A0]*$/, '$1');
+    }
+
+    function getCookie(name) {
+        const matches = document.cookie.match(new RegExp('(^|; )' + name + '=([^;]*)'));
+        return matches ? decodeURIComponent(matches[2]) : null;
+    }
+
+    // Asegura que haya cookie XSRF-TOKEN o token meta; si no existe hace un GET para que el servidor la cree
+    function ensureCsrf() {
+        return new Promise((resolve, reject) => {
+            // Primero usar el token inyectado por Thymeleaf en meta si está disponible
+            if (csrfToken && csrfToken.trim().length > 0) {
+                console.debug('ensureCsrf: usando token inyectado por Thymeleaf (meta)');
+                return resolve(sanitizeToken(csrfToken));
+            }
+            // También permitir leer desde la cookie XSRF-TOKEN (CookieCsrfTokenRepository)
+            const existing = getCookie('XSRF-TOKEN');
+            if (existing) return resolve(sanitizeToken(existing));
+            // Si no hay token, hacer un GET para que el servidor cree la cookie
+            fetch(window.location.href, { method: 'GET', credentials: 'include' })
+                .then(() => {
+                    const tok = getCookie('XSRF-TOKEN');
+                    console.debug('ensureCsrf: cookie XSRF-TOKEN tras GET ->', tok);
+                    if (tok) resolve(sanitizeToken(tok));
+                    else reject(new Error('No se pudo obtener XSRF-TOKEN'));
+                })
+                .catch(err => reject(err));
+         });
+     }
+
+    function startEditComentario(id) {
+        // Si id es 0 (por Thymeleaf placeholder) se intenta coger desde el DOM en el evento
+        if (!id || id === 0) {
+            // this function may be called from onclick with placeholder; find closest li
+            // event doesn't propagate here, so try to find a selected li by focusing element
+            // Mejor: obtener el id del botón usando arguments.callee.caller no fiable.
+            // En vez de esto, buscaremos el primer li que tenga aria-selected o simplemente abortar.
+        }
+        // Intentar encontrar el li con data-comentario-id si id no válido
+        if (!id || id === 0) {
+            // intentar extraer id del elemento activo (document.activeElement)
+            const active = document.activeElement;
+            if (active && active.closest) {
+                const li = active.closest('li[data-comentario-id]');
+                if (li) id = parseInt(li.dataset.comentarioId, 10);
+            }
+        }
+        if (!id || isNaN(id)) { alert('No se pudo iniciar la edición del comentario'); return; }
+
+        const li = document.querySelector('li[data-comentario-id="' + id + '"]');
+        if (!li) { alert('Comentario no encontrado en la página'); return; }
+        const texto = li.dataset.text || li.querySelector('span') && li.querySelector('span').textContent || '';
+        document.getElementById('texto').value = texto;
+        editingComentarioId = id;
+        document.getElementById('comentarioSubmit').textContent = 'Guardar';
+        document.getElementById('comentarioCancel').style.display = 'inline-block';
+        document.getElementById('texto').focus();
+    }
+
+    function cancelEditComentario() {
+        editingComentarioId = null;
+        document.getElementById('texto').value = '';
+        document.getElementById('comentarioSubmit').textContent = 'Añadir';
+        document.getElementById('comentarioCancel').style.display = 'none';
+    }
+
+    function enviarComentario() {
+        const textoEl = document.getElementById('texto');
+        const texto = textoEl.value && textoEl.value.trim();
+        if (!texto) { alert('Introduce un texto para el comentario'); return false; }
+
+        ensureCsrf().then(csrf => {
+            const headers = { 'Content-Type': 'application/json' };
+            const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+            if (csrf) headers[headerName] = csrf;
+            console.debug('enviarComentario: headers=', headers);
+
+            if (editingComentarioId) {
+                // actualizar comentario existente via PUT
+                const url = '/api/rutas/' + rutaId + '/comentarios/' + editingComentarioId;
+                console.debug('enviarComentario: PUT', url, JSON.stringify({ texto: texto }));
+                fetch(url, {
+                     method: 'PUT',
+                     credentials: 'include',
+                     headers: headers,
+                     body: JSON.stringify({ texto: texto })
+                }).then(r => {
+                    console.debug('enviarComentario: respuesta status=', r.status);
+                    if (r.ok) {
+                        location.reload();
+                    } else {
+                        r.text().then(t => alert('Error al modificar comentario: ' + r.status + ' - ' + (t || r.statusText)));
+                    }
+                }).catch(e => alert('Error de red al modificar comentario: ' + e));
+             } else {
+                 // crear nuevo comentario via POST
+                const url = '/api/rutas/' + rutaId + '/comentarios';
+                console.debug('enviarComentario: POST', url, JSON.stringify({ texto: texto }));
+                fetch(url, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: headers,
+                    body: JSON.stringify({ texto: texto })
+                }).then(async r => {
+                    console.debug('enviarComentario POST status=', r.status);
+                    const ct = r.headers.get('content-type') || '';
+                    if (ct.indexOf('text/html') !== -1) {
+                        alert('Parece que no estás autenticado. Se abrirá la página de login.');
+                        window.location = '/login';
+                        return;
+                    }
+                    if (r.status === 201 || r.ok) {
+                        location.reload();
+                    } else if (r.status === 401 || r.status === 403) {
+                        const t = await r.text();
+                        alert('No autorizado: ' + (t || r.statusText));
+                        window.location = '/login';
+                    } else {
+                        const t = await r.text();
+                        alert('Error al añadir comentario: ' + r.status + ' - ' + (t || r.statusText));
+                    }
+                }).catch(e => alert('Error de red al añadir comentario: ' + e));
+             }
+         }).catch(err => { alert('No se obtuvo token CSRF: ' + err); });
+
+        return false;
+    }
+
+    function enviarValoracion() {
+        const puntuacionRaw = document.getElementById('puntuacion').value;
+        if (!puntuacionRaw) { alert('Introduce una puntuación entre 1 y 10'); return false; }
+        const puntuacion = parseInt(puntuacionRaw, 10);
+        if (isNaN(puntuacion) || puntuacion < 1 || puntuacion > 10) { alert('La puntuación debe ser un número entre 1 y 10'); return false; }
+
+        ensureCsrf().then(csrf => {
+            const headers = { 'Content-Type': 'application/json' };
+            const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+            if (csrf) headers[headerName] = csrf;
+            const url = '/api/rutas/' + rutaId + '/valoraciones';
+            console.debug('enviarValoracion: POST', url, JSON.stringify({ puntuacion: puntuacion }), 'headers=', headers);
+            fetch(url, {
+                method: 'POST',
+                credentials: 'include',
+                headers: headers,
+                body: JSON.stringify({ puntuacion: puntuacion })
+            }).then(async r => {
+                console.debug('enviarValoracion status=', r.status);
+                const ct = r.headers.get('content-type') || '';
+                if (ct.indexOf('text/html') !== -1) {
+                    alert('Parece que no estás autenticado. Ir a login.');
+                    window.location = '/login';
+                    return;
+                }
+                if (r.status === 201 || r.ok) {
+                    location.reload();
+                } else if (r.status === 401 || r.status === 403) {
+                    const t = await r.text();
+                    alert('No autorizado: ' + (t || r.statusText));
+                    window.location = '/login';
+                } else {
+                    const t = await r.text();
+                    alert('Error al añadir/actualizar valoración: ' + r.status + ' - ' + (t || r.statusText));
+                }
+            }).catch(e => alert('Error de red al añadir valoración: ' + e));
+        }).catch(err => { alert('No se obtuvo token CSRF: ' + err); });
+
+        return false;
+    }
+
+    function deleteComentario(id) {
+        if (!id) { alert('ID de comentario inválido'); return; }
+        if (!confirm('¿Eliminar este comentario?')) return;
+        ensureCsrf().then(csrf => {
+            const headers = {};
+            const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+            if (csrf) headers[headerName] = csrf;
+            const url = '/api/rutas/' + rutaId + '/comentarios/' + id;
+            console.debug('deleteComentario: DELETE', url);
+            fetch(url, {
+                 method: 'DELETE',
+                 credentials: 'include',
+                 headers: headers
+             }).then(r => {
+                 if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar comentario: ' + (t || r.statusText)));
+             }).catch(e => alert('Error de red al eliminar comentario: ' + e));
+        }).catch(err => alert('No se obtuvo token CSRF: ' + err));
+    }
+
+    function deleteValoracion(id) {
+        if (!id) { alert('ID de valoración inválido'); return; }
+        if (!confirm('¿Eliminar esta valoración?')) return;
+        ensureCsrf().then(csrf => {
+            const headers = {};
+            const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+            if (csrf) headers[headerName] = csrf;
+            const url = '/api/rutas/' + rutaId + '/valoraciones/' + id;
+            console.debug('deleteValoracion: DELETE', url);
+            fetch(url, {
+                 method: 'DELETE',
+                 credentials: 'include',
+                 headers: headers
+             }).then(r => {
+                 if (r.ok) location.reload(); else r.text().then(t => alert('Error al eliminar valoración: ' + (t || r.statusText)));
+             }).catch(e => alert('Error de red al eliminar valoración: ' + e));
+        }).catch(err => alert('No se obtuvo token CSRF: ' + err));
+    }
+
+    function deleteRuta() {
+        if (!confirm('¿Eliminar esta ruta? Esta operación también eliminará comentarios y valoraciones relacionados.')) return;
+        ensureCsrf().then(csrf => {
+            const headers = {};
+            const headerName = csrfHeaderName || 'X-XSRF-TOKEN';
+            if (csrf) headers[headerName] = csrf;
+            const url = '/api/rutas/' + rutaId;
+            console.debug('deleteRuta: DELETE', url);
+            fetch(url, {
+                 method: 'DELETE',
+                 credentials: 'include',
+                 headers: headers
+             }).then(r => {
+                 if (r.status === 204 || r.ok) {
+                     window.location = '/';
+                 } else {
+                     r.text().then(t => alert('Error al eliminar ruta: ' + (t || r.statusText)));
+                 }
+             }).catch(e => alert('Error de red al eliminar ruta: ' + e));
+        }).catch(err => alert('No se obtuvo token CSRF: ' + err));
+    }
+
+    /* Reutilizamos las funciones ya definidas más arriba (startEditComentario, cancelEditComentario, enviarComentario, etc.) */
+
+
+    // Ejecutar inicializadores ligeros al cargar
+    document.addEventListener('DOMContentLoaded', function(){
+        renderAllStars();
+        setupReadMore();
+        setupUploadPlaceholder();
+        setupStarInput();
+    });
+</script>
+</body>
+</html>

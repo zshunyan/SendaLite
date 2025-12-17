@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Usuarios</title>
+    <th:block th:replace="fragments/common :: headExtras" />
+</head>
+<body>
+<th:block th:replace="fragments/common :: navbar" />
+<h1>Usuarios</h1>
+<ul>
+    <li th:each="u : ${usuarios}">
+        <a th:href="@{'/usuarios/' + ${u.idUsuario}}" th:text="${u.nombre}">Usuario</a>
+        <span th:text="' (' + ${u.email} + ')'">(email)</span>
+    </li>
+</ul>
+<p><a href="/">Volver a Rutas</a></p>
+</body>
+</html>

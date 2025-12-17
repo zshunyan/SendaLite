@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Login</title>
+    <th:block th:replace="fragments/common :: headExtras" />
+</head>
+<body>
+<th:block th:replace="fragments/common :: navbar" />
+<h1>Iniciar sesión</h1>
+<div th:if="${param.error}">
+    <p style="color:red">Invalid credentials</p>
+</div>
+<div th:if="${success}">
+    <p style="color:green" th:text="${success}">Registrado</p>
+</div>
+<form th:action="@{/login}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <label>Email: <input type="text" name="username" /></label><br/>
+    <label>Password: <input type="password" name="password" /></label><br/>
+    <button type="submit">Login</button>
+</form>
+</body>
+</html>

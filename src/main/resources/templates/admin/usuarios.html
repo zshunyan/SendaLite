@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin - Usuarios</title>
+    <th:block th:replace="~{fragments/common :: headExtras}" />
+</head>
+<body>
+<th:block th:replace="~{fragments/common :: navbar}" />
+<h1>Usuarios</h1>
+<table>
+    <thead>
+        <tr><th>Nombre</th><th>Email</th><th>Admin</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+        <tr th:each="u : ${usuarios}">
+            <td th:text="${u.nombre}">Nombre</td>
+            <td th:text="${u.email}">(email)</td>
+            <td th:text="${u.admin}">false</td>
+            <td>
+                <!-- Usar sintaxis de Thymeleaf para path variables -->
+                <a th:href="@{/admin/usuarios/{id}/editar(id=${u.idUsuario})}">Editar</a>
+                &nbsp;|&nbsp;
+                <button type="button" th:attr="data-id=${u.idUsuario}" onclick="deleteUser(this.getAttribute('data-id'))">Eliminar</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<p><a href="/admin">Volver al panel</a></p>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var csrfMeta = document.querySelector('meta[name="_csrf"]');
+    var csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : null;
+    var csrfHeaderName = csrfHeaderMeta ? csrfHeaderMeta.getAttribute('content') : 'X-XSRF-TOKEN';
+
+    function deleteUser(id) {
+        if (!confirm('¿Eliminar usuario id=' + id + '? Esta acción borrará también sus rutas y datos relacionados.')) return;
+        var headers = {};
+        if (csrfToken) headers[csrfHeaderName] = csrfToken;
+        fetch('/api/usuarios/' + id, { method: 'DELETE', credentials: 'include', headers: headers })
+            .then(r => { if (r.ok) location.reload(); else r.text().then(t => alert('Error: ' + t)); })
+            .catch(e => alert('Error de red: ' + e));
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
